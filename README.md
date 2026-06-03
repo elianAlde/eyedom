@@ -15,6 +15,18 @@ Monitor earthquakes, disasters, geopolitical events, weather conditions, and glo
 
 </div>
 
+<br>
+
+<p align="center">
+  <img src="assets/screenshot/eyedom-readme-screenshot.png" alt="EYEDOM Dashboard" width="100%" />
+</p>
+
+<p align="center">
+  <a href="https://elianalde.github.io/eyedom/">
+    <img src="https://img.shields.io/badge/Live%20Demo-Visit%20EYEDOM-00c8ff?style=for-the-badge" alt="Visit EYEDOM" />
+  </a>
+</p>
+
 ## 👁️ Overview
 
 EYEDOM is an experimental **Open-Source Intelligence (OSINT)** platform designed to provide real-time global situational awareness.
