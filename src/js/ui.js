@@ -170,7 +170,7 @@ window.Eyedom.ui = (() => {
 	}
 
 	function setGlobalNewsError() {
-		elements.globalNewsList.innerHTML = '< class="feed-item error">GDELT rate limit reached. Please try again in a few minutes.</div>';
+		elements.globalNewsList.innerHTML = '<div class="feed-item error">GDELT rate limit reached. Please try again in a few minutes.</div>';
 	}
 
 	function showDetail(detail) {
