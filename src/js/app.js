@@ -1,160 +1,223 @@
 window.Eyedom = window.Eyedom || {};
 
 window.Eyedom.app = (() => {
-  const { api, config, globe, ui } = window.Eyedom;
+    const { api, config, globe, ui } = window.Eyedom;
 
-  async function init() {
-    const elements = ui.init();
+    async function init() {
+        const elements = ui.init();
 
-    globe.init(elements.globe);
-    bindEvents();
+        globe.init(elements.globe);
+        bindEvents();
 
-    await loadEarthquakes();
-    await loadDisasters();
-    await loadGlobalNews(config.defaults.initialNewsFilter);
-    await searchPlace(config.defaults.initialCity);
-  }
-
-  function bindEvents() {
-    ui.bindSearch(searchPlace);
-    ui.bindDetailDrawer();
-    ui.bindNewsFilters(loadGlobalNews);
-    ui.bindActions({
-      'toggle-earthquakes': globe.toggleEarthquakes,
-      'toggle-disasters': globe.toggleDisasters,
-      'toggle-connections': globe.toggleConnections,
-      'focus-europe': () => globe.focusRegion('europe'),
-      'focus-usa': () => globe.focusRegion('usa')
-    });
-  }
-
-  async function loadEarthquakes() {
-    try {
-      const earthquakes = await api.getRecentEarthquakes();
-
-      globe.setEarthquakes(earthquakes);
-      ui.renderEarthquakes(earthquakes, (item) => {
-        globe.focusPoint(item.lat, item.lng);
-        ui.showDetail(createEarthquakeDetail(item));
-      });
-      ui.setSourceStatus('usgs', 'ok', 'USGS OK');
-    } catch (error) {
-      ui.setEarthquakeError();
-      ui.setSourceStatus('usgs', 'error', 'USGS OFF');
-      console.error(error);
+        await Promise.all([
+            loadEarthquakes(),
+            loadDisasters(),
+            loadGlobalNews(config.defaults.initialNewsFilter),
+            searchPlace(config.defaults.initialCity)
+        ]);
     }
-  }
 
-  async function loadDisasters() {
-    try {
-      const disasters = await api.getGdacsDisasters();
+    function bindEvents() {
+        ui.bindSearch(searchPlace);
+        ui.bindDetailDrawer();
+        ui.bindNewsFilters(loadGlobalNews);
 
-      globe.setDisasters(disasters);
-      ui.renderDisasters(disasters, (item) => {
-        globe.focusPoint(item.lat, item.lng);
-        ui.showDetail(createDisasterDetail(item));
-      });
-      ui.setSourceStatus('gdacs', 'ok', 'GDACS OK');
-    } catch (error) {
-      ui.setDisasterError();
-      ui.setSourceStatus('gdacs', 'error', 'GDACS OFF');
-      console.error(error);
+        ui.bindActions({
+            'toggle-earthquakes': globe.toggleEarthquakes,
+            'toggle-disasters': globe.toggleDisasters,
+            'toggle-connections': globe.toggleConnections,
+            'focus-europe': () => globe.focusRegion('europe'),
+            'focus-usa': () => globe.focusRegion('usa')
+        });
     }
-  }
 
-  async function loadGlobalNews(filterKey) {
-    ui.setNewsFiltersDisabled(true);
-    ui.setGlobalNewsLoading();
+    async function loadEarthquakes() {
+        try {
+            const earthquakes = await api.getRecentEarthquakes();
 
-    try {
-      const articles = await api.getGlobalNews(filterKey);
+            globe.setEarthquakes(earthquakes);
 
-      ui.renderGlobalNews(articles, (item) => {
-        ui.showDetail(createNewsDetail(item));
-      });
-      ui.setSourceStatus('gdelt', 'ok', 'GDELT OK');
-    } catch (error) {
-      ui.setGlobalNewsError();
-      ui.setSourceStatus('gdelt', 'warning', 'GDELT LIMIT');
-      console.error(error);
-    } finally {
-      ui.setNewsFiltersDisabled(false);
+            ui.renderEarthquakes(earthquakes, (item) => {
+                globe.focusPoint(item.lat, item.lng);
+                ui.showDetail(createEarthquakeDetail(item));
+            });
+
+            ui.setSourceStatus('usgs', 'ok', 'USGS OK');
+        } catch (error) {
+            ui.setEarthquakeError();
+            ui.setSourceStatus('usgs', 'error', 'USGS OFF');
+            console.error(error);
+        }
     }
-  }
 
-  async function searchPlace(query) {
-    if (!query) return;
+    async function loadDisasters() {
+        try {
+            const disasters = await api.getGdacsDisasters();
 
-    ui.setWeatherStatus('Ricerca in corso...');
+            globe.setDisasters(disasters);
 
-    try {
-      const place = await api.searchPlace(query);
+            ui.renderDisasters(disasters, (item) => {
+                globe.focusPoint(item.lat, item.lng);
+                ui.showDetail(createDisasterDetail(item));
+            });
 
-      if (!place) {
-        ui.setWeatherStatus('Luogo non trovato');
-        return;
-      }
-
-      globe.focusPoint(place.latitude, place.longitude);
-
-      const currentWeather = await api.getCurrentWeather(place);
-      ui.renderWeather(place, currentWeather);
-      ui.setSourceStatus('meteo', 'ok', 'METEO OK');
-    } catch (error) {
-      ui.setWeatherStatus('Meteo non disponibile');
-      ui.setSourceStatus('meteo', 'error', 'METEO OFF');
-      console.error(error);
+            ui.setSourceStatus('gdacs', 'ok', 'GDACS OK');
+        } catch (error) {
+            ui.setDisasterError();
+            ui.setSourceStatus('gdacs', 'error', 'GDACS OFF');
+            console.error(error);
+        }
     }
-  }
 
-  function createEarthquakeDetail(item) {
+    async function loadGlobalNews(filterKey) {
+        ui.setNewsFiltersDisabled(true);
+        ui.setGlobalNewsLoading();
+
+        try {
+            const articles = await api.getGlobalNews(filterKey);
+
+            ui.renderGlobalNews(articles, (item) => {
+                ui.showDetail(createNewsDetail(item));
+            });
+
+            ui.setSourceStatus('gdelt', 'ok', 'GDELT OK');
+        } catch (error) {
+            ui.setGlobalNewsError();
+            ui.setSourceStatus('gdelt', 'warning', 'GDELT LIMIT');
+            console.error(error);
+        } finally {
+            ui.setNewsFiltersDisabled(false);
+        }
+    }
+
+    async function searchPlace(query) {
+        if (!query) return;
+
+        ui.setWeatherStatus('Searching...');
+
+        try {
+            const place = await api.searchPlace(query);
+
+            if (!place) {
+                ui.setWeatherStatus('Location not found');
+                return;
+            }
+
+            globe.focusPoint(place.latitude, place.longitude);
+
+            const currentWeather = await api.getCurrentWeather(place);
+
+            ui.renderWeather(place, currentWeather);
+            ui.setSourceStatus('meteo', 'ok', 'WEATHER OK');
+
+        } catch (error) {
+            ui.setWeatherStatus('Weather unavailable');
+            ui.setSourceStatus('meteo', 'error', 'WEATHER OFF');
+            console.error(error);
+        }
+    }
+
+    function createEarthquakeDetail(item) {
+        return {
+            type: 'EARTHQUAKE',
+            title: `M ${item.magnitude.toFixed(1)} - ${item.place}`,
+            rows: [
+                {
+                    label: 'Source',
+                    value: 'USGS'
+                },
+                {
+                    label: 'Magnitude',
+                    value: item.magnitude.toFixed(1)
+                },
+                {
+                    label: 'Depth',
+                    value: `${Math.round(item.depth)} km`
+                },
+                {
+                    label: 'Coordinates',
+                    value: `${item.lat.toFixed(3)}, ${item.lng.toFixed(3)}`
+                },
+                {
+                    label: 'Time',
+                    value: item.time
+                        ? window.Eyedom.utils.formatDateTime(item.time)
+                        : 'n/a'
+                }
+            ],
+            link: item.url
+        };
+    }
+
+    function createDisasterDetail(item) {
+        return {
+            type: 'ALERT',
+            title: `${item.typeLabel} - ${item.name}`,
+            rows: [
+                {
+                    label: 'Source',
+                    value: 'GDACS'
+                },
+                {
+                    label: 'Severity',
+                    value: item.alertLevel || 'n/a'
+                },
+                {
+                    label: 'Country / Area',
+                    value: item.country || 'n/a'
+                },
+                {
+                    label: 'Coordinates',
+                    value: `${item.lat.toFixed(3)}, ${item.lng.toFixed(3)}`
+                },
+                {
+                    label: 'Date',
+                    value: item.date
+                        ? window.Eyedom.utils.formatDateTime(item.date)
+                        : 'n/a'
+                }
+            ],
+            link: item.url
+        };
+    }
+
+    function createNewsDetail(item) {
+        return {
+            type: 'NEWS',
+            title: item.title,
+            rows: [
+                {
+                    label: 'Source',
+                    value: item.domain
+                },
+                {
+                    label: 'Source Country',
+                    value: item.sourceCountry || 'n/a'
+                },
+                {
+                    label: 'Language',
+                    value: item.language || 'n/a'
+                },
+                {
+                    label: 'Published',
+                    value: item.publishedAt
+                        ? window.Eyedom.utils.formatDateTime(item.publishedAt)
+                        : 'n/a'
+                }
+            ],
+            description:
+                'News signal from GDELT. Always verify the original source before considering the information confirmed.',
+            link: item.url
+        };
+    }
+
     return {
-      type: 'TERREMOTO',
-      title: `M ${item.magnitude.toFixed(1)} - ${item.place}`,
-      rows: [
-        { label: 'Fonte', value: 'USGS' },
-        { label: 'Magnitudo', value: item.magnitude.toFixed(1) },
-        { label: 'Profondita', value: `${Math.round(item.depth)} km` },
-        { label: 'Coordinate', value: `${item.lat.toFixed(3)}, ${item.lng.toFixed(3)}` },
-        { label: 'Ora', value: item.time ? window.Eyedom.utils.formatDateTime(item.time) : 'n/d' }
-      ],
-      link: item.url
+        init
     };
-  }
 
-  function createDisasterDetail(item) {
-    return {
-      type: 'ALLERTA',
-      title: `${item.typeLabel} - ${item.name}`,
-      rows: [
-        { label: 'Fonte', value: 'GDACS' },
-        { label: 'Livello', value: item.alertLevel || 'n/d' },
-        { label: 'Paese/area', value: item.country || 'n/d' },
-        { label: 'Coordinate', value: `${item.lat.toFixed(3)}, ${item.lng.toFixed(3)}` },
-        { label: 'Data', value: item.date ? window.Eyedom.utils.formatDateTime(item.date) : 'n/d' }
-      ],
-      link: item.url
-    };
-  }
-
-  function createNewsDetail(item) {
-    return {
-      type: 'NOTIZIA',
-      title: item.title,
-      rows: [
-        { label: 'Fonte', value: item.domain },
-        { label: 'Paese fonte', value: item.sourceCountry || 'n/d' },
-        { label: 'Lingua', value: item.language || 'n/d' },
-        { label: 'Vista', value: item.publishedAt ? window.Eyedom.utils.formatDateTime(item.publishedAt) : 'n/d' }
-      ],
-      description: 'Segnale news da GDELT. Verifica sempre la fonte originale prima di considerarlo confermato.',
-      link: item.url
-    };
-  }
-
-  return {
-    init
-  };
 })();
 
-document.addEventListener('DOMContentLoaded', window.Eyedom.app.init);
+document.addEventListener(
+    'DOMContentLoaded',
+    window.Eyedom.app.init
+);

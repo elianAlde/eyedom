@@ -1,124 +1,164 @@
 window.Eyedom = window.Eyedom || {};
 
 window.Eyedom.globe = (() => {
-  const { config } = window.Eyedom;
+    const { config } = window.Eyedom;
 
-  const state = {
-    world: null,
-    earthquakes: [],
-    disasters: [],
-    connections: [
-      {
-        startLat: 41.9,
-        startLng: 12.5,
-        endLat: 40.7,
-        endLng: -74.0,
-        color: ['#00ffff', '#ff00ff']
-      },
-      {
-        startLat: 35.6,
-        startLng: 139.7,
-        endLat: 37.77,
-        endLng: -122.41,
-        color: ['#ffaa00', '#ff0000']
-      }
-    ],
-    earthquakesVisible: true,
-    disastersVisible: true,
-    connectionsVisible: true
-  };
+    const state = {
+        world: null,
 
-  function init(container) {
-    state.world = Globe()(container)
-      .globeImageUrl(config.globe.imageUrl)
-      .bumpImageUrl(config.globe.bumpImageUrl)
-      .backgroundImageUrl(config.globe.backgroundImageUrl)
-      .backgroundColor('#000')
-      .pointsData([])
-      .pointAltitude('size')
-      .pointColor('color')
-      .pointLabel('label')
-      .arcsData(state.connections)
-      .arcColor('color')
-      .arcDashLength(0.4)
-      .arcDashGap(4)
-      .arcDashAnimateTime(2500);
+        earthquakes: [],
 
-    state.world.controls().autoRotate = true;
-    state.world.controls().autoRotateSpeed = config.globe.autoRotateSpeed;
-    state.world.atmosphereColor(config.globe.atmosphereColor);
-    state.world.atmosphereAltitude(config.globe.atmosphereAltitude);
+        disasters: [],
 
-    return state.world;
-  }
+        connections: [
+            {
+                startLat: 41.9,
+                startLng: 12.5,
+                endLat: 40.7,
+                endLng: -74.0,
+                color: ['#00ffff', '#ff00ff']
+            },
+            {
+                startLat: 35.6,
+                startLng: 139.7,
+                endLat: 37.77,
+                endLng: -122.41,
+                color: ['#ffaa00', '#ff0000']
+            }
+        ],
 
-  function setEarthquakes(earthquakes) {
-    state.earthquakes = earthquakes;
-    syncPoints();
-  }
+        earthquakesVisible: true,
+        disastersVisible: true,
+        connectionsVisible: true
+    };
 
-  function setDisasters(disasters) {
-    state.disasters = disasters;
-    syncPoints();
-  }
+    function init(container) {
 
-  function toggleEarthquakes() {
-    state.earthquakesVisible = !state.earthquakesVisible;
-    syncPoints();
+        state.world = Globe()(container)
+            .globeImageUrl(config.globe.imageUrl)
+            .bumpImageUrl(config.globe.bumpImageUrl)
+            .backgroundImageUrl(config.globe.backgroundImageUrl)
+            .backgroundColor('#000')
+            .pointsData([])
+            .pointAltitude('size')
+            .pointColor('color')
+            .pointLabel('label')
+            .arcsData(state.connections)
+            .arcColor('color')
+            .arcDashLength(0.4)
+            .arcDashGap(4)
+            .arcDashAnimateTime(2500);
 
-    return state.earthquakesVisible;
-  }
+        state.world.controls().autoRotate = true;
+        state.world.controls().autoRotateSpeed =
+            config.globe.autoRotateSpeed;
 
-  function toggleDisasters() {
-    state.disastersVisible = !state.disastersVisible;
-    syncPoints();
+        state.world.atmosphereColor(
+            config.globe.atmosphereColor
+        );
 
-    return state.disastersVisible;
-  }
+        state.world.atmosphereAltitude(
+            config.globe.atmosphereAltitude
+        );
 
-  function syncPoints() {
-    const points = [
-      ...(state.earthquakesVisible ? state.earthquakes : []),
-      ...(state.disastersVisible ? state.disasters : [])
-    ];
+        return state.world;
+    }
 
-    state.world.pointsData(points);
-  }
+    function setEarthquakes(earthquakes) {
+        state.earthquakes = earthquakes;
+        syncPoints();
+    }
 
-  function toggleConnections() {
-    state.connectionsVisible = !state.connectionsVisible;
-    state.world.arcsData(state.connectionsVisible ? state.connections : []);
+    function setDisasters(disasters) {
+        state.disasters = disasters;
+        syncPoints();
+    }
 
-    return state.connectionsVisible;
-  }
+    function toggleEarthquakes() {
+        state.earthquakesVisible =
+            !state.earthquakesVisible;
 
-  function focusPoint(lat, lng, altitude = 1.35) {
-    state.world.pointOfView(
-      {
+        syncPoints();
+
+        return state.earthquakesVisible;
+    }
+
+    function toggleDisasters() {
+        state.disastersVisible =
+            !state.disastersVisible;
+
+        syncPoints();
+
+        return state.disastersVisible;
+    }
+
+    function syncPoints() {
+
+        const points = [
+            ...(state.earthquakesVisible
+                ? state.earthquakes
+                : []),
+
+            ...(state.disastersVisible
+                ? state.disasters
+                : [])
+        ];
+
+        state.world.pointsData(points);
+    }
+
+    function toggleConnections() {
+
+        state.connectionsVisible =
+            !state.connectionsVisible;
+
+        state.world.arcsData(
+            state.connectionsVisible
+                ? state.connections
+                : []
+        );
+
+        return state.connectionsVisible;
+    }
+
+    function focusPoint(
         lat,
         lng,
-        altitude
-      },
-      1200
-    );
-  }
+        altitude = 1.35
+    ) {
+        state.world.pointOfView(
+            {
+                lat,
+                lng,
+                altitude
+            },
+            1200
+        );
+    }
 
-  function focusRegion(region) {
-    const target = config.focus[region];
+    function focusRegion(region) {
 
-    if (!target) return;
+        const target = config.focus[region];
 
-    state.world.pointOfView(target, 1500);
-  }
+        if (!target) {
+            return;
+        }
 
-  return {
-    init,
-    setEarthquakes,
-    setDisasters,
-    toggleEarthquakes,
-    toggleDisasters,
-    toggleConnections,
-    focusPoint,
-    focusRegion
-  };
+        state.world.pointOfView(
+            target,
+            1500
+        );
+    }
+
+    return {
+        init,
+        setEarthquakes,
+        setDisasters,
+        toggleEarthquakes,
+        toggleDisasters,
+        toggleConnections,
+        focusPoint,
+        focusRegion
+    };
+
 })();

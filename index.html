@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="it">
+
+<html lang="en">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -25,162 +26,178 @@
                 <p>OSINT INTELLIGENCE</p>
             </div>
 
-            <input class="search" id="searchInput" placeholder="Cerca luogo per meteo e focus mappa..."/>
+            <input
+                class="search"
+                id="searchInput"
+                placeholder="Search location for weather and map focus..."
+            />
 
             <div class="menu">
                 <div>Dashboard</div>
-                <div>Mappa</div>
-                <div>Grafo</div>
+                <div>Map</div>
+                <div>Graph</div>
                 <div>Feed</div>
             </div>
         </div>
 
-  <!-- LEFT SIDEBAR -->
-  <div class="sidebar left">
+        <!-- LEFT SIDEBAR -->
+        <div class="sidebar left">
 
-    <div class="panel scroll-panel">
-      <div class="panel-header">
-        <span>TERREMOTI RECENTI</span>
-        <span class="live">LIVE</span>
-      </div>
+            <div class="panel scroll-panel">
+                <div class="panel-header">
+                    <span>RECENT EARTHQUAKES</span>
+                    <span class="live">LIVE</span>
+                </div>
 
-      <div class="panel-list" id="earthquakeList">
-        <div class="feed-item">Caricamento dati USGS...</div>
-      </div>
-    </div>
+                <div class="panel-list" id="earthquakeList">
+                    <div class="feed-item">Loading USGS data...</div>
+                </div>
+            </div>
 
-    <div class="panel">
-      <div class="panel-header">
-        <span>METEO GLOBALE</span>
-        <span class="live">LIVE</span>
-      </div>
+            <div class="panel">
+                <div class="panel-header">
+                    <span>GLOBAL WEATHER</span>
+                    <span class="live">LIVE</span>
+                </div>
 
-      <div class="weather">
-        <div id="weatherIcon" class="weather-icon">--</div>
+                <div class="weather">
+                    <div id="weatherIcon" class="weather-icon">--</div>
 
-        <div>
-          <div class="temp" id="weatherTemp">--°C</div>
-          <div class="muted" id="weatherSummary">
-            Cerca una città
-          </div>
+                    <div>
+                        <div class="temp" id="weatherTemp">--°C</div>
+                        <div class="muted" id="weatherSummary">
+                            Search for a city
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats">
+
+                    <div class="stat">
+                        <span>Humidity</span>
+                        <strong id="weatherHumidity">--%</strong>
+                    </div>
+
+                    <div class="stat">
+                        <span>Wind</span>
+                        <strong id="weatherWind">-- km/h</strong>
+                    </div>
+
+                    <div class="stat">
+                        <span>Pressure</span>
+                        <strong id="weatherPressure">-- hPa</strong>
+                    </div>
+
+                </div>
+            </div>
+
         </div>
-      </div>
 
-      <div class="stats">
+        <!-- RIGHT SIDEBAR -->
+        <div class="sidebar right">
 
-        <div class="stat">
-          <span>Umidità</span>
-          <strong id="weatherHumidity">--%</strong>
+            <div class="panel scroll-panel">
+                <div class="panel-header">
+                    <span>GLOBAL NEWS</span>
+                    <span class="live">LIVE</span>
+                </div>
+
+                <div class="filter-row" id="newsFilters">
+                    <button class="filter active" data-news-filter="global">Global</button>
+                    <button class="filter" data-news-filter="conflicts">Conflicts</button>
+                    <button class="filter" data-news-filter="disasters">Disasters</button>
+                    <button class="filter" data-news-filter="cyber">Cyber</button>
+                    <button class="filter" data-news-filter="protests">Protests</button>
+                    <button class="filter" data-news-filter="energy">Energy</button>
+                </div>
+
+                <div class="panel-list" id="globalNewsList">
+                    <div class="feed-item">Loading GDELT news...</div>
+                </div>
+            </div>
+
+            <div class="panel scroll-panel">
+                <div class="panel-header">
+                    <span>GDACS ALERTS</span>
+                    <span class="live">LIVE</span>
+                </div>
+
+                <div class="panel-list" id="disasterList">
+                    <div class="feed-item">Loading GDACS alerts...</div>
+                </div>
+            </div>
+
         </div>
 
-        <div class="stat">
-          <span>Vento</span>
-          <strong id="weatherWind">-- km/h</strong>
+        <!-- STATUS -->
+        <div class="status">
+            LIVE GLOBAL MONITORING
         </div>
 
-        <div class="stat">
-          <span>Pressione</span>
-          <strong id="weatherPressure">-- hPa</strong>
+        <!-- SOURCE STATUS -->
+        <div class="source-status" id="sourceStatus">
+            <span class="source-pill" data-source-status="usgs">USGS --</span>
+            <span class="source-pill" data-source-status="gdacs">GDACS --</span>
+            <span class="source-pill" data-source-status="gdelt">GDELT --</span>
+            <span class="source-pill" data-source-status="meteo">WEATHER --</span>
         </div>
 
-      </div>
-    </div>
+        <!-- EVENT DETAIL -->
+        <aside class="detail-drawer" id="detailDrawer" aria-hidden="true">
+            <div class="detail-header">
+                <div>
+                    <span class="detail-type" id="detailType">EVENT</span>
+                    <h2 id="detailTitle">Select an event</h2>
+                </div>
 
-  </div>
+                <button
+                    class="icon-button"
+                    id="detailClose"
+                    type="button"
+                    aria-label="Close details"
+                >
+                    ×
+                </button>
+            </div>
 
-  <!-- RIGHT SIDEBAR -->
-  <div class="sidebar right">
+            <div class="detail-body" id="detailBody">
+                <p class="muted">
+                    Click earthquakes, alerts, or news to view details.
+                </p>
+            </div>
+        </aside>
 
-    <div class="panel scroll-panel">
-      <div class="panel-header">
-        <span>NOTIZIE GLOBALI</span>
-        <span class="live">LIVE</span>
-      </div>
+        <!-- BOTTOM BUTTONS -->
+        <div class="bottom-buttons">
 
-      <div class="filter-row" id="newsFilters">
-        <button class="filter active" data-news-filter="global">Globali</button>
-        <button class="filter" data-news-filter="conflicts">Guerre</button>
-        <button class="filter" data-news-filter="disasters">Disastri</button>
-        <button class="filter" data-news-filter="cyber">Cyber</button>
-        <button class="filter" data-news-filter="protests">Proteste</button>
-        <button class="filter" data-news-filter="energy">Energia</button>
-      </div>
+            <button data-action="toggle-earthquakes">
+                EARTHQUAKES
+            </button>
 
-      <div class="panel-list" id="globalNewsList">
-        <div class="feed-item">Caricamento notizie GDELT...</div>
-      </div>
-    </div>
+            <button data-action="toggle-disasters">
+                ALERTS
+            </button>
 
-    <div class="panel scroll-panel">
-      <div class="panel-header">
-        <span>ALLERTE GDACS</span>
-        <span class="live">LIVE</span>
-      </div>
+            <button data-action="toggle-connections">
+                CONNECTIONS
+            </button>
 
-      <div class="panel-list" id="disasterList">
-        <div class="feed-item">Caricamento allerte GDACS...</div>
-      </div>
-    </div>
+            <button data-action="focus-europe">
+                EUROPE
+            </button>
 
-  </div>
+            <button data-action="focus-usa">
+                USA
+            </button>
 
-  <!-- STATUS -->
-  <div class="status">
-    LIVE GLOBAL MONITORING
-  </div>
+        </div>
 
-  <!-- SOURCE STATUS -->
-  <div class="source-status" id="sourceStatus">
-    <span class="source-pill" data-source-status="usgs">USGS --</span>
-    <span class="source-pill" data-source-status="gdacs">GDACS --</span>
-    <span class="source-pill" data-source-status="gdelt">GDELT --</span>
-    <span class="source-pill" data-source-status="meteo">METEO --</span>
-  </div>
+        <script src="src/js/config.js"></script>
+        <script src="src/js/utils.js"></script>
+        <script src="src/js/api.js"></script>
+        <script src="src/js/globe.js"></script>
+        <script src="src/js/ui.js"></script>
+        <script src="src/js/app.js"></script>
 
-  <!-- EVENT DETAIL -->
-  <aside class="detail-drawer" id="detailDrawer" aria-hidden="true">
-    <div class="detail-header">
-      <div>
-        <span class="detail-type" id="detailType">EVENTO</span>
-        <h2 id="detailTitle">Seleziona un evento</h2>
-      </div>
-      <button class="icon-button" id="detailClose" type="button" aria-label="Chiudi dettaglio">×</button>
-    </div>
-
-    <div class="detail-body" id="detailBody">
-      <p class="muted">Clicca su terremoti, allerte o notizie per vedere i dettagli.</p>
-    </div>
-  </aside>
-
-  <!-- BOTTOM BUTTONS -->
-  <div class="bottom-buttons">
-    <button data-action="toggle-earthquakes">
-      TERREMOTI
-    </button>
-
-    <button data-action="toggle-disasters">
-      ALLERTE
-    </button>
-
-    <button data-action="toggle-connections">
-      CONNESSIONI
-    </button>
-
-    <button data-action="focus-europe">
-      EUROPA
-    </button>
-
-    <button data-action="focus-usa">
-      USA
-    </button>
-  </div>
-
-  <script src="src/js/config.js"></script>
-  <script src="src/js/utils.js"></script>
-  <script src="src/js/api.js"></script>
-  <script src="src/js/globe.js"></script>
-  <script src="src/js/ui.js"></script>
-  <script src="src/js/app.js"></script>
-
-</body>
+    </body>
 </html>
