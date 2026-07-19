@@ -58,14 +58,11 @@ async function getRecentEarthquakes() {
 	.map(normalizeEarthquake);
 }
 
-async function getGlobalNews(filterKey = config.defaults.initialNewsFilter) {
-	const cacheKey = `eyedom:gdelt:${filterKey}`;
-	const cachedArticles = utils.readCache(cacheKey, config.defaults.newsCacheMinutes);
+function wait(ms) {
+	return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
 
-	if (cachedArticles) {
-		return cachedArticles.map(hydrateNewsArticle);
-	}
-
+function buildGdeltUrl(filterKey) {
 	const url = new URL(config.sources.gdeltDoc);
 	const filter = config.newsFilters[filterKey] || config.newsFilters.global;
 
@@ -76,18 +73,37 @@ async function getGlobalNews(filterKey = config.defaults.initialNewsFilter) {
 	url.searchParams.set('maxrecords', '20');
 	url.searchParams.set('sort', 'hybridrel');
 
+	return url;
+}
+
+async function getGlobalNews(filterKey = config.defaults.initialNewsFilter, onRetry) {
+	const cacheKey = `eyedom:gdelt:${filterKey}`;
+	const cachedArticles = utils.readCache(cacheKey, config.defaults.newsCacheMinutes);
+
+	if (cachedArticles) {
+		return cachedArticles.map(hydrateNewsArticle);
+	}
+
 	let data;
 
 	try {
-		data = await fetchJsonp(url);
-	} catch (error) {
-		const staleArticles = utils.readStaleCache(cacheKey);
+		data = await fetchJsonp(buildGdeltUrl(filterKey));
+	} catch (firstError) {
+		if (onRetry) onRetry();
 
-		if (staleArticles) {
-			return staleArticles.map(hydrateNewsArticle);
+		await wait(6000);
+
+		try {
+			data = await fetchJsonp(buildGdeltUrl(filterKey));
+		} catch (secondError) {
+			const staleArticles = utils.readStaleCache(cacheKey);
+
+			if (staleArticles) {
+				return staleArticles.map(hydrateNewsArticle);
+			}
+
+			throw secondError;
 		}
-
-		throw error;
 	}
 
 	if (!Array.isArray(data.articles)) {
@@ -293,6 +309,37 @@ async function getGdacsDisasters() {
 		return data.results && data.results[0] ? data.results[0] : null;
 	}
 
+	async function searchFlight(query) {
+		const callsign = String(query || '').trim().toUpperCase();
+
+		if (!callsign) return null;
+
+		const url = `${config.sources.flightCallsign}${encodeURIComponent(callsign)}`;
+		const data = await fetchJson(url);
+
+		if (!Array.isArray(data.ac) || !data.ac.length) {
+			return null;
+		}
+
+		return normalizeFlight(data.ac[0]);
+	}
+
+	function normalizeFlight(aircraft) {
+		const rawAltitude = aircraft.alt_geom ?? aircraft.alt_baro;
+
+		return {
+			icao24: aircraft.hex || '',
+			callsign: utils.escapeHtml((aircraft.flight || '').trim()),
+			aircraftType: utils.escapeHtml(aircraft.t || ''),
+			lat: typeof aircraft.lat === 'number' ? aircraft.lat : null,
+			lng: typeof aircraft.lon === 'number' ? aircraft.lon : null,
+			altitude: typeof rawAltitude === 'number' ? rawAltitude : null,
+			onGround: rawAltitude === 'ground',
+			speedKmh: typeof aircraft.gs === 'number' ? aircraft.gs * 1.852 : null,
+			heading: typeof aircraft.track === 'number' ? aircraft.track : null
+		};
+	}
+
 	async function getCurrentWeather(place) {
 		const url = new URL(config.sources.openMeteoForecast);
 
@@ -317,6 +364,7 @@ async function getGdacsDisasters() {
 		getGdacsDisasters,
 		getGlobalNews,
 		searchPlace,
-		getCurrentWeather
+		getCurrentWeather,
+		searchFlight
 	};
 })();

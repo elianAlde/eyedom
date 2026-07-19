@@ -91,6 +91,69 @@
                 </div>
             </div>
 
+            <div class="panel">
+                <div class="panel-header">
+                    <span>FLIGHT TRACKER</span>
+                    <span class="live">LIVE</span>
+                </div>
+
+                <div class="flight-map" aria-hidden="true">
+                    <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid meet">
+                        <defs>
+                            <filter id="landGlow" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="4" />
+                            </filter>
+                        </defs>
+
+                        <g stroke="rgba(88,247,255,0.12)" stroke-width="0.5">
+                            <line x1="0" y1="50" x2="400" y2="50" />
+                            <line x1="0" y1="100" x2="400" y2="100" />
+                            <line x1="0" y1="150" x2="400" y2="150" />
+                            <line x1="66" y1="0" x2="66" y2="200" />
+                            <line x1="133" y1="0" x2="133" y2="200" />
+                            <line x1="200" y1="0" x2="200" y2="200" />
+                            <line x1="266" y1="0" x2="266" y2="200" />
+                            <line x1="333" y1="0" x2="333" y2="200" />
+                        </g>
+
+                        <g fill="rgba(88,247,255,0.22)" filter="url(#landGlow)">
+                            <ellipse cx="75" cy="55" rx="45" ry="30" />
+                            <ellipse cx="115" cy="135" rx="22" ry="38" />
+                            <ellipse cx="205" cy="45" rx="20" ry="18" />
+                            <ellipse cx="215" cy="110" rx="30" ry="42" />
+                            <ellipse cx="300" cy="60" rx="60" ry="35" />
+                            <ellipse cx="335" cy="155" rx="24" ry="13" />
+                        </g>
+
+                        <g fill="rgba(88,247,255,0.4)">
+                            <ellipse cx="75" cy="55" rx="45" ry="30" opacity="0.35" />
+                            <ellipse cx="115" cy="135" rx="22" ry="38" opacity="0.35" />
+                            <ellipse cx="205" cy="45" rx="20" ry="18" opacity="0.35" />
+                            <ellipse cx="215" cy="110" rx="30" ry="42" opacity="0.35" />
+                            <ellipse cx="300" cy="60" rx="60" ry="35" opacity="0.35" />
+                            <ellipse cx="335" cy="155" rx="24" ry="13" opacity="0.35" />
+                        </g>
+                    </svg>
+
+                    <div class="scan"></div>
+                </div>
+
+                <div class="flight-search">
+                    <input
+                        id="flightSearchInput"
+                        placeholder="Flight number (e.g. BAW123)"
+                    />
+
+                    <button id="flightSearchButton" type="button">
+                        Search
+                    </button>
+                </div>
+
+                <div class="flight-result" id="flightResult">
+                    <p class="muted">Enter a flight number to check its live position.</p>
+                </div>
+            </div>
+
         </div>
 
         <!-- RIGHT SIDEBAR -->
@@ -140,6 +203,7 @@
             <span class="source-pill" data-source-status="gdacs">GDACS --</span>
             <span class="source-pill" data-source-status="gdelt">GDELT --</span>
             <span class="source-pill" data-source-status="meteo">WEATHER --</span>
+            <span class="source-pill" data-source-status="flights">FLIGHTS --</span>
         </div>
 
         <!-- EVENT DETAIL -->

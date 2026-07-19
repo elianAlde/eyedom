@@ -20,7 +20,10 @@ window.Eyedom.ui = (() => {
 		weatherSummary: 'weatherSummary',
 		weatherHumidity: 'weatherHumidity',
 		weatherWind: 'weatherWind',
-		weatherPressure: 'weatherPressure'
+		weatherPressure: 'weatherPressure',
+		flightSearchInput: 'flightSearchInput',
+		flightSearchButton: 'flightSearchButton',
+		flightResult: 'flightResult'
 	};
 
 	const elements = {};
@@ -131,6 +134,10 @@ window.Eyedom.ui = (() => {
 		elements.globalNewsList.innerHTML = '<div class="feed-item">Loading GDELT news...</div>';
 	}
 
+	function setGlobalNewsRetrying() {
+		elements.globalNewsList.innerHTML = '<div class="feed-item">GDELT rate limit hit, retrying...</div>';
+	}
+
 	function setNewsFiltersDisabled(disabled) {
 		elements.newsFilters.querySelectorAll('[data-news-filter]').forEach((button) => {
 			button.disabled = disabled;
@@ -161,6 +168,55 @@ window.Eyedom.ui = (() => {
 		elements.weatherSummary.textContent = message;
 	}
 
+	function setFlightSearching() {
+		elements.flightResult.innerHTML = '<p class="muted">Searching...</p>';
+	}
+
+	function renderFlightResult(flight) {
+		if (!flight) {
+			elements.flightResult.innerHTML =
+				'<p class="muted">No live flight found with that number.</p>';
+			return;
+		}
+
+		elements.flightResult.innerHTML = `
+			<div class="flight-info">
+				<strong>${flight.callsign || 'n/a'}</strong>
+				<span class="muted">${flight.aircraftType || ''}</span>
+			</div>
+			<div class="stats">
+				<div class="stat">
+					<span>Altitude</span>
+					<strong>${flight.onGround ? 'Ground' : (flight.altitude != null ? `${Math.round(flight.altitude)} ft` : 'n/a')}</strong>
+				</div>
+				<div class="stat">
+					<span>Speed</span>
+					<strong>${flight.speedKmh != null ? `${Math.round(flight.speedKmh)} km/h` : 'n/a'}</strong>
+				</div>
+				<div class="stat">
+					<span>Heading</span>
+					<strong>${flight.heading != null ? `${Math.round(flight.heading)}°` : 'n/a'}</strong>
+				</div>
+			</div>
+		`;
+	}
+
+	function setFlightSearchError(message) {
+		elements.flightResult.innerHTML = `<p class="muted error">${utils.escapeHtml(message)}</p>`;
+	}
+
+	function bindFlightSearch(onSearch) {
+		elements.flightSearchButton.addEventListener('click', () => {
+			onSearch(elements.flightSearchInput.value.trim());
+		});
+
+		elements.flightSearchInput.addEventListener('keydown', (event) => {
+			if (event.key === 'Enter') {
+				onSearch(elements.flightSearchInput.value.trim());
+			}
+		});
+	}
+
 	function setEarthquakeError() {
 		elements.earthquakeList.innerHTML = '<div class="feed-item error">USGS unavailable</div>';
 	}
@@ -170,7 +226,7 @@ window.Eyedom.ui = (() => {
 	}
 
 	function setGlobalNewsError() {
-		elements.globalNewsList.innerHTML = '<div class="feed-item error">GDELT rate limit reached. Please try again in a few minutes.</div>';
+		elements.globalNewsList.innerHTML = '<div class="feed-item error">GDELT is temporarily rate-limited. Try again in a minute.</div>';
 	}
 
 	function showDetail(detail) {
@@ -259,18 +315,23 @@ window.Eyedom.ui = (() => {
 		renderDisasters,
 		renderGlobalNews,
 		renderWeather,
+		renderFlightResult,
 		showDetail,
 		hideDetail,
 		setSourceStatus,
 		setGlobalNewsLoading,
+		setGlobalNewsRetrying,
 		setNewsFiltersDisabled,
 		setWeatherStatus,
 		setEarthquakeError,
 		setDisasterError,
 		setGlobalNewsError,
+		setFlightSearching,
+		setFlightSearchError,
 		bindSearch,
 		bindDetailDrawer,
 		bindNewsFilters,
+		bindFlightSearch,
 		bindActions,
 		elements
 	};

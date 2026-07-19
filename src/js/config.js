@@ -24,7 +24,10 @@ window.Eyedom.config = {
             'https://geocoding-api.open-meteo.com/v1/search',
 
         openMeteoForecast:
-            'https://api.open-meteo.com/v1/forecast'
+            'https://api.open-meteo.com/v1/forecast',
+
+        flightCallsign:
+            'https://api.airplanes.live/v2/callsign/'
     },
 
     defaults: {

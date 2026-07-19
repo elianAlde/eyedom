@@ -21,6 +21,7 @@ window.Eyedom.app = (() => {
         ui.bindSearch(searchPlace);
         ui.bindDetailDrawer();
         ui.bindNewsFilters(loadGlobalNews);
+        ui.bindFlightSearch(searchFlight);
 
         ui.bindActions({
             'toggle-earthquakes': globe.toggleEarthquakes,
@@ -74,7 +75,7 @@ window.Eyedom.app = (() => {
         ui.setGlobalNewsLoading();
 
         try {
-            const articles = await api.getGlobalNews(filterKey);
+            const articles = await api.getGlobalNews(filterKey, ui.setGlobalNewsRetrying);
 
             ui.renderGlobalNews(articles, (item) => {
                 ui.showDetail(createNewsDetail(item));
@@ -115,6 +116,44 @@ window.Eyedom.app = (() => {
             ui.setSourceStatus('meteo', 'error', 'WEATHER OFF');
             console.error(error);
         }
+    }
+
+    async function searchFlight(query) {
+        if (!query) return;
+
+        ui.setFlightSearching();
+
+        try {
+            const flight = await api.searchFlight(query);
+
+            ui.renderFlightResult(flight);
+            ui.setSourceStatus('flights', 'ok', 'FLIGHTS OK');
+
+            if (flight && flight.lat !== null && flight.lng !== null) {
+                globe.setFlight(createFlightPoint(flight));
+                globe.focusPoint(flight.lat, flight.lng, 1.6);
+            } else {
+                globe.clearFlight();
+            }
+        } catch (error) {
+            ui.setFlightSearchError('Flight data unavailable');
+            ui.setSourceStatus('flights', 'error', 'FLIGHTS OFF');
+            console.error(error);
+        }
+    }
+
+    function createFlightPoint(flight) {
+        return {
+            lat: flight.lat,
+            lng: flight.lng,
+            size: 0.24,
+            color: '#50ff8c',
+            label: `
+                <strong>${flight.callsign || 'Unknown flight'}</strong><br>
+                ${flight.aircraftType || ''}<br>
+                Alt: ${flight.altitude != null ? `${Math.round(flight.altitude)} ft` : 'n/a'}
+            `
+        };
     }
 
     function createEarthquakeDetail(item) {

@@ -10,6 +10,8 @@ window.Eyedom.globe = (() => {
 
         disasters: [],
 
+        flight: null,
+
         connections: [
             {
                 startLat: 41.9,
@@ -74,6 +76,16 @@ window.Eyedom.globe = (() => {
         syncPoints();
     }
 
+    function setFlight(flight) {
+        state.flight = flight;
+        syncPoints();
+    }
+
+    function clearFlight() {
+        state.flight = null;
+        syncPoints();
+    }
+
     function toggleEarthquakes() {
         state.earthquakesVisible =
             !state.earthquakesVisible;
@@ -101,6 +113,10 @@ window.Eyedom.globe = (() => {
 
             ...(state.disastersVisible
                 ? state.disasters
+                : []),
+
+            ...(state.flight
+                ? [state.flight]
                 : [])
         ];
 
@@ -154,6 +170,8 @@ window.Eyedom.globe = (() => {
         init,
         setEarthquakes,
         setDisasters,
+        setFlight,
+        clearFlight,
         toggleEarthquakes,
         toggleDisasters,
         toggleConnections,
